@@ -1,0 +1,15 @@
+CREATE DATABASE IF NOT EXISTS viajes_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE viajes_db;
+
+DROP TABLE IF EXISTS viajes;
+
+CREATE TABLE viajes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  codigo VARCHAR(30) NOT NULL UNIQUE,
+  origen VARCHAR(100) NOT NULL,
+  destino VARCHAR(100) NOT NULL,
+  fecha DATE NOT NULL,
+  pasajeros INT NOT NULL,
+  conductor_id INT NOT NULL,
+  creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

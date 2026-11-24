@@ -24,8 +24,14 @@ function validarPayloadViaje(datos, esActualizacion = false) {
   }
 }
 
-async function listarViajes(token) {
-  const viajes = await viajesRepo.findAll();
+async function listarViajes(token, filtros = {}) {
+  let viajes = await viajesRepo.findAll();
+
+  if (filtros.destino) {
+    const busq = String(filtros.destino).toLowerCase();
+    viajes = viajes.filter((v) => v.destino.toLowerCase().includes(busq));
+  }
+
   const ids = viajes.map((v) => v.conductor_id);
   const { mapa, aviso } = await obtenerMapaConductores(ids, token);
 

@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require('../config/db');
 
 const CAMPOS = 'id, codigo, origen, destino, fecha, pasajeros, conductor_id, creado_en';
 

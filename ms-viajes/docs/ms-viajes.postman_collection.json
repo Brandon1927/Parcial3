@@ -1,354 +1,378 @@
 {
-	"info": {
-		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-		"name": "ms-viajes - Evaluacion M3",
-		"description": "Colección de pruebas para ms-viajes (Brandon Montilla y Victor Salazar)",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://127.0.0.1:3011"
-		},
-		{
-			"key": "usuarios_url",
-			"value": "http://127.0.0.1:3001"
-		},
-		{
-			"key": "token",
-			"value": ""
-		}
-	],
-	"item": [
-		{
-			"name": "1. Login Administrador (ms-usuarios)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"const res = pm.response.json();",
-							"if (res.token) {",
-							"    pm.collectionVariables.set(\"token\", res.token);",
-							"}"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"correo\": \"admin@correo.com\",\n  \"password\": \"123456\"\n}"
-				},
-				"url": {
-					"raw": "{{usuarios_url}}/usuarios/login",
-					"host": [
-						"{{usuarios_url}}"
-					],
-					"path": [
-						"usuarios",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "2. Listar todos los viajes (200)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/viajes",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "3. Filtrar viajes por destino (200)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/viajes?destino=Bogota",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes"
-					],
-					"query": [
-						{
-							"key": "destino",
-							"value": "Bogota"
-						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "4. Obtener viaje por ID (200)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/viajes/1",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "5. Obtener viaje inexistente (404)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/viajes/9999",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes",
-						"9999"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "6. Crear viaje válido (201)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"codigo\": \"VJ-004\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Santa Marta\",\n  \"fecha\": \"2026-12-15\",\n  \"pasajeros\": 45\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/viajes",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "7. Crear viaje con código repetido (409)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"codigo\": \"VJ-001\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Pasto\",\n  \"fecha\": \"2026-12-20\",\n  \"pasajeros\": 30\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/viajes",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "8. Crear viaje inválido - pasajeros 0 (400)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"codigo\": \"VJ-099\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Pereira\",\n  \"fecha\": \"2026-12-22\",\n  \"pasajeros\": 0\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/viajes",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "9. Actualizar viaje existente (200)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"codigo\": \"VJ-004\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Barranquilla\",\n  \"fecha\": \"2026-12-18\",\n  \"pasajeros\": 50\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/viajes/4",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes",
-						"4"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "10. Eliminar viaje (204)",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{base_url}}/viajes/4",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"viajes",
-						"4"
-					]
-				}
-			},
-			"response": []
-		}
-	]
+  "info": {
+    "_postman_id": "20aec444-5215-49ab-a630-3150bfe0b952",
+    "name": "ms-viajes - Evaluacion M3",
+    "description": "Colección de pruebas para ms-viajes (Brandon Montilla y Victor Salazar)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "45383181",
+    "_collection_link": "https://go.postman.co/collection/45383181-20aec444-5215-49ab-a630-3150bfe0b952?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "1. Login Administrador (ms-usuarios)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const res = pm.response.json();\nif (res.token) {\n    pm.collectionVariables.set(\"token\", res.token);\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@empresa.com\",\n  \"password\": \"Admin2026*\"\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{usuarios_url}}/usuarios/login",
+          "host": [
+            "{{usuarios_url}}"
+          ],
+          "path": [
+            "usuarios",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Listar todos los viajes (200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/viajes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Filtrar viajes por destino (200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/viajes?destino=palmira",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes"
+          ],
+          "query": [
+            {
+              "key": "destino",
+              "value": "palmira"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Obtener viaje por ID (200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/viajes/2",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Obtener viaje inexistente (404)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/viajes/9999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes",
+            "9999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Crear viaje válido (201)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"VJ-004\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Santa Marta\",\n  \"fecha\": \"2026-12-15\",\n  \"pasajeros\": 45,\n  \"conductor_id\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/viajes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Crear viaje con código repetido (409)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"VJ-001\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Pasto\",\n  \"fecha\": \"2026-12-20\",\n  \"pasajeros\": 30,\n  \"conductor_id\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/viajes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Crear viaje inválido - pasajeros 0 (400)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"VJ-099\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Pereira\",\n  \"fecha\": \"2026-12-22\",\n  \"pasajeros\": 0,\n  \"conductor_id\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/viajes",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Actualizar viaje existente (200)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"codigo\": \"VJ-004\",\n  \"origen\": \"Cali\",\n  \"destino\": \"Barranquilla\",\n  \"fecha\": \"2026-12-18\",\n  \"pasajeros\": 50,\n  \"conductor_id\": 4\n}",
+          "options": {
+            "raw": {
+              "language": "text"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/viajes/4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10. Eliminar viaje (204)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/viajes/4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "viajes",
+            "4"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:3011"
+    },
+    {
+      "key": "usuarios_url",
+      "value": "http://127.0.0.1:3001"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
 }

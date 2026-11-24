@@ -2,25 +2,24 @@ const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
 
 const verificarToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(new HttpError(401, 'Token no proporcionado o formato invalido'));
+  const header = req.headers.authorization || "";
+  const [ripo, token] = header.split(' ');
+  if (tipo !== 'Bearer' || !token) {
+    return res.status(401).json({error: 'Token no proporcionado o formato invalido'});
   }
 
-  const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario = decoded;
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = payload;
     next();
   } catch (err) {
-    return next(new HttpError(401, 'Token invalido o expirado'));
+    return res.status(401).json({error: 'Token invalido o expirado'});
   }
 };
 
 const soloAdmin = (req, res, next) => {
-  const rol = req.usuario?.rol || req.usuario?.role;
-  if (rol !== 'administrador') {
-    return next(new HttpError(403, 'Acceso denegado: se requiere rol administrador'));
+  if (!req.user || req.user.rol !== 'admin') {
+    return res.status(403).json({error: 'Acceso denegado: se requiere rol admin'});
   }
   next();
 };

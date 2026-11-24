@@ -1,86 +1,116 @@
 const viajesRepo = require('../repositories/viajes.repository');
 const HttpError = require('../utils/HttpError');
 
-const validarPayloadViaje = (data) => {
-  const { codigo, origen, destino, fecha, pasajeros } = data;
+const{
+  validarYObtenerConductor,
+  obtenerConductorPorId,
+  obtenerMapaConductores,
+} = require('../clients/conductores.client');
 
-  if (!codigo || typeof codigo !== 'string' || !codigo.trim()) {
-    throw new HttpError(400, 'El campo codigo es obligatorio y debe ser texto');
-  }
-  if (!origen || typeof origen !== 'string' || !origen.trim()) {
-    throw new HttpError(400, 'El campo origen es obligatorio y debe ser texto');
-  }
-  if (!destino || typeof destino !== 'string' || !destino.trim()) {
-    throw new HttpError(400, 'El campo destino es obligatorio y debe ser texto');
-  }
+function validarPayloadViaje (datos, esActualizacion = false) {
+  const { codigo, origen, destino, fecha, pasajeros, conductor_id} = datos || {};
 
-  // Validar formato AAAA-MM-DD y existencia real de fecha
-  const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
-  if (!fecha || typeof fecha !== 'string' || !regexFecha.test(fecha) || Number.isNaN(Date.parse(fecha))) {
-    throw new HttpError(400, 'El campo fecha debe tener formato valido AAAA-MM-DD');
+  if(!esActualizacion){
+    if(!codigo || !origen || !destino || !fecha || pasajeros === undefined || conductor_id === undefined){
+      throw new HttpError(400, `Faltan campos obligatorios: codigo, origen, destino, fecha, pasajeros, conductor_id`);
+    }
   }
 
-  const numPasajeros = Number(pasajeros);
-  if (!Number.isInteger(numPasajeros) || numPasajeros <= 0) {
-    throw new HttpError(400, 'El campo pasajeros debe ser un entero mayor que 0');
+  if (pasajeros !== undefined && (!Number.isInteger(Number(pasajeros)) ||Number(pasajeros) <= 0)) {
+    throw new HttpError(400, 'pasajeros debe ser un entero positivo');
+  }
+  if (conductor_id !== undefined && (!Number.isInteger(Number(conductor_id)) ||Number(pasajeros) <= 0)) {
+    throw new HttpError(400, 'conductor_id debe ser un entero positivo');
+  }
+}
+  async function listarViajes(token) {
+    const viajes = await reportError.findAll();
+    const ids = viajes.map((v) => v.conductor_id);
+    const { mapa, aviso} = await obtenerMapaConductores(ids, token);
+    
+    return viajes.map((viaje) =>{
+      if(!mapa){
+        return{ ...viaje, conductor: null, aviso};
+      }
+      return {
+        ...viaje,
+        conductor: mapa.get(viaje.conductor_id) || null,
+      };
+    });
   }
 
-  return {
-    codigo: codigo.trim(),
-    origen: origen.trim(),
-    destino: destino.trim(),
-    fecha,
-    pasajeros: numPasajeros
-  };
-};
-
-const listarViajes = async (destino) => {
-  return await viajesRepo.findAll(destino);
-};
-
-const obtenerViajePorId = async (id) => {
-  const numId = Number(id);
-  if (!Number.isInteger(numId) || numId <= 0) {
-    throw new HttpError(400, 'El id debe ser un numero entero positivo');
-  }
-  const viaje = await viajesRepo.findById(numId);
-  if (!viaje) {
-    throw new HttpError(404, `No existe un viaje con id ${numId}`);
-  }
-  return viaje;
-};
-
-const crearViaje = async (data) => {
-  const limpio = validarPayloadViaje(data);
-
-  const existente = await viajesRepo.findByCodigo(limpio.codigo);
-  if (existente) {
-    throw new HttpError(409, `Ya existe un viaje con el codigo ${limpio.codigo}`);
+  async function obtenerViaje(id, token){
+    const viaje = await reportError.findById(id);
+    if(!viaje){
+      throw new HttpError(404, 'viaje no encontrado');
+    }
+    const { conductor, aviso} = await obtenerConductorPorId(viaje.conductor_id, token);
+    if(aviso){
+      return { ...viaje, conductor: null, aviso};
+    }
+    return { ...viaje, conductor};
   }
 
-  return await viajesRepo.create(limpio);
-};
+  async function crearViaje(datos, token) {
+    validarPayloadViaje(datos, false);
+    const conductorId = Number(datos.conductorId);
 
-const actualizarViaje = async (id, data) => {
-  const viajeActual = await obtenerViajePorId(id); // Lanza 400 o 404 si no existe
-  const limpio = validarPayloadViaje(data);
-
-  const existente = await viajesRepo.findByCodigo(limpio.codigo);
-  if (existente && existente.id !== viajeActual.id) {
-    throw new HttpError(409, `Ya existe otro viaje con el codigo ${limpio.codigo}`);
+    const conductor = await validarYObtenerConductor(conductorId, token);
+    try {
+      const creado = await reportError.create({
+        condigo: String(datos.codigo).trim(),
+        origen: String(datos.origen).trim(),
+        destino: String(datos.destino).trim(),
+        fecha: datos.fecha,
+        pasajeros: Number(datos.pasajeros),
+        conductor_id: conductorId,
+      });
+      return { ...creado, conductor};
+    } catch (err) {
+      if(err.code === 'ER_DUP_ENTRY'){
+        throw new HttpError(409, `ya existe un viaje con el codigo ${datos.codigo}`);
+      }
+      throw err
+    }
   }
 
-  return await viajesRepo.update(viajeActual.id, limpio);
-};
+  async function actualizarViaje(id, datos, token) {
+    const actual = await reportError.findById(id);
+    if(!actual){
+      throw new HttpError(404, `viaje no encontrado`);
+    }
 
-const eliminarViaje = async (id) => {
-  const viajeActual = await obtenerViajePorId(id); // Lanza 400 o 404 si no existe
-  await viajesRepo.remove(viajeActual.id);
-};
+    validarPayloadViaje(datos, true);
+    const conductorId = datos.conductor_id !== undefined ? Number(datos.conductor_id) : actual.conductor_id;
+    const conductor = await validarYObtenerConductor(conductorId, token);
+    try {
+      const creado = await reportError.create({
+        condigo: datos.codigo !== undefined ? String(datos.codigo).trim() : actual.codigo,
+        origen: datos.origen !== undefined ? String(datos.origen).trim() : actual.origen,
+        destino: datos.destino !== undefined ? String(datos.destino).trim() : actual.destino,
+        fecha: datos.fecha !== undefined ? datos.fecha : actual.fecha,
+        pasajeros: datos.pasajeros !== undefined ? Number(datos.pasajeros) : actual.pasajeros,
+        conductor_id: conductorId,
+      });
+      return { ...actualizado, conductor};
+    } catch (err) {
+      if(err.code === 'ER_DUP_ENTRY'){
+        throw new HttpError(409, `ya existe un viaje con el codigo ${datos.codigo}`);
+      }
+      throw err
+  }
+}
 
-module.exports = {
+  async function eliminarViaje(id){
+    const eliminado = await reportError.remove(id);
+    if(!eliminado){
+      throw new HttpError(404, `viaje no encontrado`);
+    }
+  }
+
+module.exports= {
   listarViajes,
-  obtenerViajePorId,
+  obtenerViaje,
   crearViaje,
   actualizarViaje,
   eliminarViaje

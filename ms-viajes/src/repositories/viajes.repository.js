@@ -1,54 +1,39 @@
 const pool = require('../config/db');
-const Viaje = require('../models/viaje.model');
 
-const findAll = async (destino) => {
-  let query = 'SELECT id, codigo, origen, destino, fecha, pasajeros FROM viajes';
-  const params = [];
-
-  if (destino) {
-    query += ' WHERE destino = ?';
-    params.push(destino);
-  }
-
-  const [rows] = await pool.query(query, params);
-  return rows.map((row) => new Viaje(row));
+async function findAll(){
+  const [rows] = await pool.query(
+    'SELECT id, codigo, origen, destino, DATE_FORMAT(fecha, "%Y-%m-%d") AS fecha, pasajeros, conductorid FROM viajes ORDER BY id ASC'
+  );
+  return rows;
 };
 
-const findById = async (id) => {
+async function findById(id){
   const [rows] = await pool.query(
-    'SELECT id, codigo, origen, destino, fecha, pasajeros FROM viajes WHERE id = ?',
+    'SELECT id, codigo, origen, destino, DATE_FORMAT(fecha, "%Y-%m-%d") AS fecha, pasajeros, conductor_id FROM viajes WHERE id = ?',
     [id]
   );
-  return rows.length ? new Viaje(rows[0]) : null;
+  return rows[0] || null;
 };
 
-const findByCodigo = async (codigo) => {
-  const [rows] = await pool.query(
-    'SELECT id, codigo, origen, destino, fecha, pasajeros FROM viajes WHERE codigo = ?',
-    [codigo]
-  );
-  return rows.length ? new Viaje(rows[0]) : null;
-};
-
-const create = async ({ codigo, origen, destino, fecha, pasajeros }) => {
+async function create ({ codigo, origen, destino, fecha, pasajeros, conductor_id}){
   const [result] = await pool.query(
-    'INSERT INTO viajes (codigo, origen, destino, fecha, pasajeros) VALUES (?, ?, ?, ?, ?)',
-    [codigo, origen, destino, fecha, pasajeros]
+    'INSERT INTO viajes (codigo, origen, destino, fecha, pasajeros, conductor_id) VALUES (?, ?, ?, ?, ?, ?)',
+    [codigo, origen, destino, fecha, pasajeros, conductor_id]
   );
   return findById(result.insertId);
 };
 
-const update = async (id, { codigo, origen, destino, fecha, pasajeros }) => {
+async function update (id, { codigo, origen, destino, fecha, pasajeros, conductor_id}) {
   await pool.query(
-    'UPDATE viajes SET codigo = ?, origen = ?, destino = ?, fecha = ?, pasajeros = ? WHERE id = ?',
-    [codigo, origen, destino, fecha, pasajeros, id]
+    'UPDATE viajes SET codigo = ?, origen = ?, destino = ?, fecha = ?, pasajeros = ?, conductor_id = ? WHERE id = ?',
+    [codigo, origen, destino, fecha, pasajeros, conductor_id, id]
   );
   return findById(id);
 };
 
-const remove = async (id) => {
+async function remove (id) {
   const [result] = await pool.query('DELETE FROM viajes WHERE id = ?', [id]);
   return result.affectedRows > 0;
 };
 
-module.exports = { findAll, findById, findByCodigo, create, update, remove };
+module.exports = { findAll, findById, create, update, remove };

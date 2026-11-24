@@ -4,7 +4,8 @@
   "description": "Microservicio de gestion de viajes - Evaluacion Modulo 3",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

@@ -1,9 +1,10 @@
 const jwt = require('jsonwebtoken');
 const HttpError = require('../utils/HttpError');
+const jwt = require('jsonwebtoken');
 
 const verificarToken = (req, res, next) => {
   const header = req.headers.authorization || "";
-  const [ripo, token] = header.split(' ');
+  const [tipo, token] = header.split(' ');
   if (tipo !== 'Bearer' || !token) {
     return res.status(401).json({error: 'Token no proporcionado o formato invalido'});
   }

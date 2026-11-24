@@ -1,0 +1,17 @@
+mysql << 'EOF'
+CREATE DATABASE IF NOT EXISTS usuarios_db CHARACTER SET utf8mb4;
+CREATE DATABASE IF NOT EXISTS viajes_db CHARACTER SET utf8mb4;
+CREATE DATABASE IF NOT EXISTS conductores_db CHARACTER SET utf8mb4;
+
+CREATE USER IF NOT EXISTS 'usuarios_user'@'192.168.56.11' IDENTIFIED BY 'Usuarios2026*';
+GRANT ALL PRIVILEGES ON usuarios_db.* TO 'usuarios_user'@'192.168.56.11';
+
+CREATE USER IF NOT EXISTS 'viajes_user'@'192.168.56.11' IDENTIFIED BY 'Viajes2026*';
+GRANT ALL PRIVILEGES ON viajes_db.* TO 'viajes_user'@'192.168.56.11';
+
+CREATE USER IF NOT EXISTS 'conductores_user'@'192.168.56.11' IDENTIFIED BY 'Conductores2026*';
+GRANT ALL PRIVILEGES ON conductores_db.* TO 'conductores_user'@'192.168.56.11';
+
+FLUSH PRIVILEGES;
+SELECT user, host FROM mysql.user;
+EOF

@@ -12,10 +12,10 @@ const soloAdmin = auth.soloAdmin || ((req, res, next) =>{
 })
 router.use(verificarToken);
 
-router.get('/', verificarToken, viajesController.getAll);
-router.get('/:id', verificarToken, viajesController.getById);
-router.post('/', verificarToken, soloAdmin, viajesController.create);
-router.put('/:id', verificarToken, soloAdmin, viajesController.update);
-router.delete('/:id', verificarToken, soloAdmin, viajesController.remove);
+router.get('/', verificarToken, viajesController.listar);
+router.get('/:id', verificarToken, viajesController.obtener);
+router.post('/', verificarToken, soloAdmin, viajesController.crear);
+router.put('/:id', verificarToken, soloAdmin, viajesController.actualizar);
+router.delete('/:id', verificarToken, soloAdmin, viajesController.eliminar);
 
 module.exports = router;

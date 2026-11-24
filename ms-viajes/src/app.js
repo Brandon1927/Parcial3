@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(logger);
 
 app.get('/viajes/health', (_req, res) => {
-  res.status(200).json({status:onkeydown, service: 'ms-viajes' });
+  res.status(200).json({status:'ok', service: 'ms-viajes' });
 });
 
 app.use('/viajes', viajesRoutes);
